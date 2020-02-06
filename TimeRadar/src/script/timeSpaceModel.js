@@ -864,7 +864,6 @@ d3.TimeSpace = function () {
         let colorSchema = d3.scaleLinear().range(['#000000','#dddddd']).domain([0,graphicopt.radaropt.schema.length]);
         layout.colorway = graphicopt.radaropt.schema.map((s,si)=>colorSchema(si))
         layout.shapes[layout.shapes.length - 1].x1 = last_timestep;
-        console.log(layout.shapes)
         let cdata = datain.filter(d=>d.name===name);
 
         const data_in = graphicopt.radaropt.schema.map((s,si) => {
@@ -973,8 +972,24 @@ d3.TimeSpace = function () {
         let datafiltered = mapIndex.map(i=>datain[i]);
         let colors =  new Float32Array( datafiltered.length * 3 );
         let pos =  new Float32Array( datafiltered.length * 3 );
+        let offsets =  new Float32Array( datafiltered.length * 2 );
         let alpha =  new Float32Array( datafiltered.length );
         let sizes =  new Float32Array( datafiltered.length);
+
+        let sprite_side = 73;
+        let sprite_size = sprite_side * sprite_side;
+        let texture_subsize = 1 / sprite_side;
+        let sprite_image_size = 28
+// actual sprite size needs to be power of 2
+        let sprite_actual_size = {x:2048};
+        sprite_actual_size.y = Math.pow(2,Math.ceil(Math.log(Math.ceil(datafiltered.length/sprite_side)*sprite_image_size)/Math.log(2)));
+        let canvasTexture = document.createElement('canvas');
+        let canvasctx = canvasTexture.getContext('2d');
+        d3.select(canvasTexture).attrs({
+            width: sprite_actual_size.x,
+            height: sprite_actual_size.y,
+        });
+        
         for (let i=0; i< datafiltered.length;i++) {
             let target = datafiltered[i];
             // Set vector coordinates from data
@@ -982,6 +997,8 @@ d3.TimeSpace = function () {
             pos[i*3+0]= 0;
             pos[i*3+1]= 0;
             pos[i*3+2]= 0;
+            offsets[i*2] = ((i%sprite_side) * sprite_image_size) / sprite_actual_size;
+            offsets[i*2+1] = (Math.floor(i / sprite_side) * sprite_image_size) / sprite_actual_size;
             // let color = new THREE.Color(d3.color(colorarr[target.cluster].value)+'');
             let color = d3.color(colorarr[target.cluster].value);
             colors[i*3+0]= color.r/255;
@@ -992,6 +1009,7 @@ d3.TimeSpace = function () {
         }
         pointsGeometry.setAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
         pointsGeometry.setAttribute( 'customColor', new THREE.BufferAttribute( colors, 3 ) );
+        pointsGeometry.addAttribute('offset', new THREE.BufferAttribute(offsets, 2))
         pointsGeometry.setAttribute( 'size', new THREE.BufferAttribute( sizes, 1 ) );
         pointsGeometry.setAttribute( 'alpha', new THREE.BufferAttribute( alpha, 1 ) );
         pointsGeometry.boundingBox = null;
@@ -1008,7 +1026,8 @@ d3.TimeSpace = function () {
         let pointsMaterial = new THREE.ShaderMaterial( {
             uniforms:       {
                 color: { value: new THREE.Color( 0xffffff ) },
-                pointTexture: { value: new THREE.TextureLoader().load( "src/images/circle.png" ) }
+                // pointTexture: { value: new THREE.TextureLoader().load( "src/images/circle.png")  },
+                pointTexture: { value: new THREE.CanvasTexture(canvasTexture)  },
                 repeat: { value: new THREE.Vector2(texture_subsize, texture_subsize) },
             },
             vertexShader:   document.getElementById( 'vertexshader' ).textContent,
