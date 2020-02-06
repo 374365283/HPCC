@@ -799,7 +799,9 @@
     attribute float alpha;
     attribute float size;
     attribute vec3 customColor;
+    attribute vec2 offset;
 
+    varying vec2 vOffset;
     varying float vAlpha;
     varying vec3 vColor;
 
@@ -808,6 +810,8 @@
         vAlpha = alpha;
 
         vColor = customColor;
+
+        vOffset = offset;
 
         vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
 
@@ -823,15 +827,18 @@
 
     uniform vec3 color;
     uniform sampler2D pointTexture;
+    uniform vec2 repeat;
 
+    varying vec2 vOffset;
     varying float vAlpha;
     varying vec3 vColor;
 
     void main() {
+        vec2 uv = vec2( gl_PointCoord.x, gl_PointCoord.y );
 
         gl_FragColor = vec4( color * vColor, vAlpha );
 
-        gl_FragColor = gl_FragColor * texture2D( pointTexture, gl_PointCoord );
+        gl_FragColor = gl_FragColor * texture2D( pointTexture, uv * repeat + vOffset);
 
     }
 

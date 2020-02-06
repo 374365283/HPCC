@@ -1006,11 +1006,10 @@ d3.TimeSpace = function () {
         //     transparent: true
         // });
         let pointsMaterial = new THREE.ShaderMaterial( {
-
             uniforms:       {
                 color: { value: new THREE.Color( 0xffffff ) },
                 pointTexture: { value: new THREE.TextureLoader().load( "src/images/circle.png" ) }
-
+                repeat: { value: new THREE.Vector2(texture_subsize, texture_subsize) },
             },
             vertexShader:   document.getElementById( 'vertexshader' ).textContent,
             fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
