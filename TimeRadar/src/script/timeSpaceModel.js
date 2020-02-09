@@ -985,6 +985,10 @@ d3.TimeSpace = function () {
         sprite_actual_size.y = Math.pow(2,Math.ceil(Math.log(Math.ceil(datafiltered.length/sprite_side)*sprite_image_size)/Math.log(2)));
         let canvasTexture = document.createElement('canvas');
         let canvasctx = canvasTexture.getContext('2d');
+        canvasctx.strokeStyle = '#ff0000';
+        canvasctx.fillRect(0, 0, sprite_actual_size.x, sprite_actual_size.y);
+        canvasctx.canvas.width = sprite_actual_size.x;
+        canvasctx.canvas.height = sprite_actual_size.y;
         d3.select(canvasTexture).attrs({
             width: sprite_actual_size.x,
             height: sprite_actual_size.y,
@@ -997,19 +1001,20 @@ d3.TimeSpace = function () {
             pos[i*3+0]= 0;
             pos[i*3+1]= 0;
             pos[i*3+2]= 0;
-            offsets[i*2] = ((i%sprite_side) * sprite_image_size) / sprite_actual_size;
-            offsets[i*2+1] = (Math.floor(i / sprite_side) * sprite_image_size) / sprite_actual_size;
+            offsets[i*2] = ((i%sprite_side) * sprite_image_size) / sprite_actual_size.x;
+            offsets[i*2+1] = (Math.floor(i / sprite_side) * sprite_image_size) / sprite_actual_size.y;
             // let color = new THREE.Color(d3.color(colorarr[target.cluster].value)+'');
             let color = d3.color(colorarr[target.cluster].value);
             colors[i*3+0]= color.r/255;
             colors[i*3+1]= color.g/255;
             colors[i*3+2]= color.b/255;
             alpha[i]= 1;
-            sizes[i] = graphicopt.component.dot.size;
+            sizes[i] = sprite_image_size;
+            // sizes[i] = graphicopt.component.dot.size;
         }
         pointsGeometry.setAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
         pointsGeometry.setAttribute( 'customColor', new THREE.BufferAttribute( colors, 3 ) );
-        pointsGeometry.addAttribute('offset', new THREE.BufferAttribute(offsets, 2))
+        pointsGeometry.setAttribute('offset', new THREE.BufferAttribute(offsets, 2))
         pointsGeometry.setAttribute( 'size', new THREE.BufferAttribute( sizes, 1 ) );
         pointsGeometry.setAttribute( 'alpha', new THREE.BufferAttribute( alpha, 1 ) );
         pointsGeometry.boundingBox = null;
@@ -1023,11 +1028,12 @@ d3.TimeSpace = function () {
         //     vertexColors: THREE.VertexColors,
         //     transparent: true
         // });
+
         let pointsMaterial = new THREE.ShaderMaterial( {
             uniforms:       {
-                color: { value: new THREE.Color( 0xffffff ) },
+                // color: { value: new THREE.Color( 0xffffff ) },
                 // pointTexture: { value: new THREE.TextureLoader().load( "src/images/circle.png")  },
-                pointTexture: { value: new THREE.CanvasTexture(canvasTexture)  },
+                texture: { value: new THREE.CanvasTexture(canvasctx.canvas)  },
                 repeat: { value: new THREE.Vector2(texture_subsize, texture_subsize) },
             },
             vertexShader:   document.getElementById( 'vertexshader' ).textContent,

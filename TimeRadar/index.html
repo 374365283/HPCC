@@ -825,8 +825,7 @@
 
 <script type="x-shader/x-fragment" id="fragmentshader">
 
-    uniform vec3 color;
-    uniform sampler2D pointTexture;
+    uniform sampler2D texture;
     uniform vec2 repeat;
 
     varying vec2 vOffset;
@@ -835,10 +834,9 @@
 
     void main() {
         vec2 uv = vec2( gl_PointCoord.x, gl_PointCoord.y );
+        vec4 tex = texture2D( texture, uv * repeat + vOffset );
 
-        gl_FragColor = vec4( color * vColor, vAlpha );
-
-        gl_FragColor = gl_FragColor * texture2D( pointTexture, uv * repeat + vOffset);
+        gl_FragColor = tex * vec4(vColor, vAlpha);
 
     }
 
